@@ -108,8 +108,8 @@ Defines where deps will be cloned to.
 #### `dep/ensure f [Dep ...]` 
 
 Checks if a dep exists (i.e. the dep is cloned to `dep/dpath`) and is setup
-properly. Otherwise, calls `dep/use`. If `force` it will shall call
-`dep/remove` then `dep/use`.
+properly. Otherwise, calls `dep/add`. If `force` it will shall call
+`dep/remove` then `dep/add`.
 
 #### `dep/add f [dep]` 
 
@@ -147,21 +147,19 @@ like deps but managed by additional tools
 
 #### `pkg/ensure f [Pkg &force]`
 
-Checks if a pkg exists and is setup properly return. Otherwise, calls `dep/use`. If
-`force` it will shall call `dep/remove` then `dep/use`.
-
-Given a pkg, install it with brew or pacman based on the os type.
+Checks if a pkg exists and is setup properly return. Otherwise, calls `dep/add`. If
+`force` it will shall call `dep/remove` then `dep/add`.
 
 #### `pkg/add f [Pkg &force]`
 
 Given a pkg, install it with brew or pacman based on the os type, and if &force
-call `pkg/remove` remove it then reinstall then `pkg/use` 
+call `pkg/remove` remove it then reinstall then `pkg/add` 
 
 #### `pkg/remove f [Pkg]`
 
 Given a pkg, remove it with brew or pacman based on the os type.
 
-#### `pkg/update f [Pkg]`
+#### `pkg/upgeade f [Pkg]`
 
 Given a pkg, update it with brew or pacman based on the os type.
 
