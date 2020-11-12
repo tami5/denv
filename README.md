@@ -111,7 +111,7 @@ Checks if a dep exists (i.e. the dep is cloned to `dep/dpath`) and is setup
 properly. Otherwise, calls `dep/use`. If `force` it will shall call
 `dep/remove` then `dep/use`.
 
-#### `dep/use f [dep]` 
+#### `dep/add f [dep]` 
 
 Executes a number of function based on the dep fields. Returns `true` if all
 operations are successful, otherwise logs errors.
@@ -152,7 +152,7 @@ Checks if a pkg exists and is setup properly return. Otherwise, calls `dep/use`.
 
 Given a pkg, install it with brew or pacman based on the os type.
 
-#### `pkg/use f [Pkg &force]`
+#### `pkg/add f [Pkg &force]`
 
 Given a pkg, install it with brew or pacman based on the os type, and if &force
 call `pkg/remove` remove it then reinstall then `pkg/use` 
