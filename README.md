@@ -80,9 +80,6 @@ Takes an optional profile name and deletes symbolic links, pkgs, and deps
 related to it. If no argument provided, it will delete everything, leaving no
 trace :D.
 
-#### `dotenv/notify f [msg &process &subtitles]`
-Takes a message and uses either `notify-send` or `alerter`.
-
 ### Deps (1/5)
 
 Deps are git repos, that are managed independently of a package manager. 
@@ -185,4 +182,7 @@ Same as link but removes the link.
 ### Utils
 
 General function that are used across the above namespace.
+
+#### `dotenv/notify f [:title :subtitle :timeout]`
+Takes a message and uses either `notify-send` or `alerter`.
 
