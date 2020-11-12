@@ -1,0 +1,26 @@
+#!/bin/bash 
+OS="`uname`"
+# V="v1.12.2"
+
+# TMP="/tmp/janet"
+# tail=".tar.gz"
+# if [ $OS == "Darwin" ]; then
+#   O="-osx"
+# elif [ $OS == "Linux" ]; then 
+#   O="-linux"
+# fi
+# F="janet-$V$O"
+# link="https://github.com/janet-lang/janet/releases/download/$V/$F$tail"
+# if [ ! $(command -v janet) ]; then
+#   echo "hello"
+#   curl -L $link > $TMP
+# fi
+
+if [ $OS == "Darwin" ]; then
+  install="brew install janet "
+elif [ $OS == "Linux" ]; then 
+  install="yay -S janet-lang-git"
+fi
+
+$install
+
