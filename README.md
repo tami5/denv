@@ -41,12 +41,14 @@ Profiles defines pkgs and deps to be installed.
 }
 ```
 
-- [ ] log changes in (profiles, deps, pkgs) on the machine.
+- [X] log changes in (profiles, deps, pkgs) on the machine.
 - [ ] Manage profiles, pkgs and deps through durable database.
 - [ ] Create an alias around pacman and brew that will simply appends new
   package and remove them from a file under `dotenv/cache`
 - [ ] add another field to pkg and dep for executing a function or a array of
   functions.
+- [ ] move all variables and files names to internal config file. For example,
+  dotenv/vars.janet
 
 ## API
 
@@ -122,7 +124,7 @@ Wrapper around `git -C fpath pull`.
 
 #### `dep/remove f [dep]` 
 
-### Pkgs (4/5)
+### Pkgs
 
 Pkgs are packages available through pacman, aur, and brew. They are exactly
 like deps but managed by additional tools
@@ -140,30 +142,23 @@ like deps but managed by additional tools
 
 ```
 
-#### `pkg/ensure f [pkg &opt force]`
+- `pkg/ensure f [pkg &opt force]` Checks if a pkg exists and is setup properly
+  return. Otherwise, calls `dep/add`. If `force` it will shall call
+  `dep/remove` then `dep/add`.
 
-Checks if a pkg exists and is setup properly return. Otherwise, calls `dep/add`. If
-`force` it will shall call `dep/remove` then `dep/add`.
+- `pkg/add f [pkg &opt silent]` Given a pkg, install it with brew or pacman
+  based on the os type, and if &force call `pkg/remove` remove it then
+  reinstall then `pkg/add` 
 
-#### `pkg/add f [pkg &opt silent]`
+- `pkg/remove f [pkg &opt silent]` Given a pkg, remove it with brew or pacman
+  based on the os type.
 
-Given a pkg, install it with brew or pacman based on the os type, and if &force
-call `pkg/remove` remove it then reinstall then `pkg/add` 
+- `pkg/upgeade f [pkg &opt silent]` Given a pkg, update it with brew or pacman
+  based on the os type.
 
-#### `pkg/remove f [pkg &opt silent]`
-
-Given a pkg, remove it with brew or pacman based on the os type.
-
-#### `pkg/upgeade f [pkg &opt silent]`
-
-Given a pkg, update it with brew or pacman based on the os type.
-
-#### `pkg/log f [pkg &opt action]`
-
-Given a pkg and action, log the newly added packages to
-`$XDG_CACHE_HOME/dotenv/added-pkgs`, and removed packages
-`$XDG_CACHE_HOME/dotenv/removed-pkgs`, and append log of the package and the
-action to `$XDG_CACHE_HOME/dotenv/state.log`.
+- `pkg/log f [pkg &opt action]` Given a pkg and action, log the newly added,
+  removed and updated packages. As well as append a log msg with the action and
+  pkg name to `dotenv/cache` (state.log).
 
 ### Conf (0/3)
 
