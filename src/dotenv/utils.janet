@@ -10,4 +10,11 @@
     (if (= (os/which) :linux)
       (sh/$? notify-send ,title ,subtitle -t ,timeout))))
 
+# thanks to @ahungry
+(def file->config (comp parse slurp))
+
+(defn config [key] 
+  (get-in (file->config "env.janet") key))
+
+
 
