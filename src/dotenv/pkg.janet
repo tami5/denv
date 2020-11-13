@@ -60,31 +60,43 @@
   (let [sudo (if (= (os/which) :linux) true false) 
         head (if sudo ["/usr/bin/sudo" "-S"])
         exec (if (not (nil? head))
-               (sh/$? echo ,(utils/config [:pass]) | ;(flatten [head ;(cmd action pkg)]))
-               (sh/$? ;(cmd action pkg)))
+               (sh/$? echo ,(utils/user-config :pass) | ;(flatten [head ;(cmd action pkg)]))
+        (sh/$? ;(cmd action pkg)))
         res (if silent
               exec
               (notify exec action pkg))] res))
 
-(defn- log 
+(defn log!
   "Log chanages in the current os. Used in add!, 
    remove! to keep track of new and removed pkgs."
-  [action pkg])
+  [action pkg]
+  (utils/log :pkg action pkg)
+  (let [b (utils/ep utils/cache) 
+        e utils/with-open
+        i (string pkg "\n")
+        f (fn [file] (e :a i (utils/ep (string b "/" file))))] 
+    (cond 
+      (= :add action) (f "new-pkgs.txt")
+      (= :remove action) (f "removed-pkgs.txt")
+      (= :upgrade action) (f "upgraded-pkgs.txt"))))
 
 (defn add!
   "Given a pkg, install it."
   [pkg &opt silent]
-  (run! :add pkg silent))
+  (run! :add pkg silent)
+  (log! :add pkg))
 
 (defn remove!
   "Given a pkg, remove! it"
   [pkg &opt silent]
-  (run! :remove pkg silent))
+  (run! :remove pkg silent)
+  (log! :remove pkg))
 
 (defn upgrade! 
   "Given a pkg, upgrade."
   [pkg &opt silent]
-  (run! :upgrade pkg silent))
+  (run! :upgrade pkg silent)
+  (log! :upgrade pkg))
 
 (defn ensure!
   "if `pkg` isn't installed install it,
