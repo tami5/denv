@@ -2,8 +2,8 @@
 (import sh)
 (import "src/dotenv/utils")
 
-(defn cmd [action pkg-name]
-  "Given an action and pkg-name, 
+(defn cmd [action pkg]
+  "Given an action and pkg, 
    return the arguments to be executed."
   (let [pm (if (= (os/which) :linux) 
              {:main "/usr/bin/pacman"
@@ -18,15 +18,15 @@
               :flag  ""
               :upgrade "upgrade"
               :info "check"})] 
-    (if (string? pkg-name)
-      [(pm :main) (pm :flag) (pm action) pkg-name]
-      (flatten [(pm :main) (pm :flag) (pm action) pkg-name]))))
+    (if (string? pkg)
+      [(pm :main) (pm :flag) (pm action) pkg]
+      (flatten [(pm :main) (pm :flag) (pm action) pkg]))))
 
 
 (defn- notify 
   "Send OS notification based on `status`, with a message that matches 
-  the `action` ran, and including the `pkg-name`"
-  [status action pkg-name]
+  the `action` ran, and including the `pkg`"
+  [status action pkg]
   (let [msg 
         (case action
           :remove 
@@ -44,54 +44,54 @@
         args 
         (if status 
           {:title "Succ:" 
-           :subtitle (string/format (msg :succ) pkg-name)
+           :subtitle (string/format (msg :succ) pkg)
            :timeout 3000}
           {:title "Error:"
-           :subtitle (string/format (msg :err) pkg-name)
+           :subtitle (string/format (msg :err) pkg)
            :timeout 50000})]
     (utils/notify 
       :title (args :title)
       :subtitle (args :subtitle))))
 
 (defn- run! 
-  "Given an action and pkg-name run the command. If silent, 
+  "Given an action and pkg run the command. If silent, 
    don't notify the user with the result."
-  [action pkg-name &opt silent] 
+  [action pkg &opt silent] 
   (let [sudo (if (= (os/which) :linux) true false) 
         head (if sudo ["/usr/bin/sudo" "-S"])
         exec (if (not (nil? head))
-               (sh/$? echo ,(utils/config [:pass]) | ;(flatten [head ;(cmd action pkg-name)]))
-               (sh/$? ;(cmd action pkg-name)))
+               (sh/$? echo ,(utils/config [:pass]) | ;(flatten [head ;(cmd action pkg)]))
+               (sh/$? ;(cmd action pkg)))
         res (if silent
               exec
-              (notify exec action pkg-name))] res))
+              (notify exec action pkg))] res))
 
 (defn- log 
   "Log chanages in the current os. Used in add!, 
    remove! to keep track of new and removed pkgs."
-  [action pkg-name])
+  [action pkg])
 
 (defn add!
   "Given a pkg, install it."
-  [pkg-name &opt silent]
-  (run! :add pkg-name silent))
+  [pkg &opt silent]
+  (run! :add pkg silent))
 
 (defn remove!
   "Given a pkg, remove! it"
-  [pkg-name &opt silent]
-  (run! :remove pkg-name silent))
+  [pkg &opt silent]
+  (run! :remove pkg silent))
 
 (defn upgrade! 
   "Given a pkg, upgrade."
-  [pkg-name &opt silent]
-  (run! :upgrade pkg-name silent))
+  [pkg &opt silent]
+  (run! :upgrade pkg silent))
 
 (defn ensure!
-  "if `pkg-name` isn't installed install it,
+  "if `pkg` isn't installed install it,
   otherwise if `force`, removed it and reinstall it."
-  [pkg-name &opt force]
+  [pkg &opt force]
   (if force
-    (do (run! :remove pkg-name) 
-      (run! :add pkg-name))
-    (when (not (run! :check pkg-name true))
-      (run! :add pkg-name))))
+    (do (run! :remove pkg) 
+      (run! :add pkg))
+    (when (not (run! :check pkg true))
+      (run! :add pkg))))
