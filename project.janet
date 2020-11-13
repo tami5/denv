@@ -9,4 +9,4 @@
    "https://github.com/janet-lang/path"
    "https://github.com/janet-lang/argparse.git"
    "https://github.com/andrewchambers/janet-process.git"
-   "https://github.com/joy-framework/tester.git"])
+   "https://github.com/pyrmont/testament.git"])
