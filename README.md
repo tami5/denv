@@ -1,4 +1,4 @@
-# Dotenv
+> Dotenv
 
 Dotenv is small configuration utility based on the idea of profiles. It is
 written to ease the tasks maintaining mission orientated profiles (i.e. set of
@@ -48,6 +48,35 @@ workflow emerge and I'd like to easily capture that :D.
 
 ## Notes
 
+**Dotenv Configuration**
+
+```clj 
+{:pass "" ;; root password for stuff to run correctly (temp)
+ :cache (or "~/.cache/dotenv" "path") ;; where the dotenv cache should be located
+ :data (or "~/.local/" "path") ;; where the dotenv cache should be located
+ :base "user/repo" ;; github-repo where all configurations and profiles are stored.
+ :home "path" ;; where `:base` will be cloned to.
+ :profiles (or (string :base "profiles") "path") ;; dir where profiles root is located
+ :dotfiles (or (string :base "dotfiles") "path") ;; dir where configuration root is located.
+ :deps (or (string :data "deps") "path")  
+}
+
+```
+
+Should cloning main conifg repo part of dotenv process, what is possible with
+that in mind?
+
+I'm thinking of making cloning user-config dir part of dotenv process to setup
+the host machine. That way it would be much simpler to get compiled version of
+dotenv and then have the config either under ~/.config/dotenv.conf or
+~/.local/dotenv, or perhaps better run dotenv with optional config either from
+local file https file. `dotenv -c https://raw.git...` where it would do
+essentially three main tasks: parse the config, clone base to ..
+
+
+**Profile** 
+
+
 Profiles defines pkgs and deps to be installed, in addition to function to be
 executed, such as run a shell script or janet function, generate a script to
 dotenv/bin to be used as part of the profile ...
@@ -68,6 +97,8 @@ dotenv/bin to be used as part of the profile ...
 }
 ```
 
+**Dep**
+
 Deps are git repos managed independently of a package manager. 
 Deps can have optional build method, configuration (or simply true ),
 description for installation process and other meta information
@@ -84,6 +115,7 @@ description for installation process and other meta information
 }
 ```
 
+**Pkgs**
 
 Pkgs are packages available through pacman, aur, and brew. They are exactly
 like deps but managed by additional tools
