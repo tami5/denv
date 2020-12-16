@@ -1,6 +1,6 @@
-> Dotenv
+# Denv
 
-Dotenv is small configuration utility based on the idea of profiles. It is
+denv is small configuration utility based on the idea of profiles. It is
 written to ease the tasks maintaining mission orientated profiles (i.e. set of
 deps and pkgs concerning a set or sets of tasks).  [More on the design](#notes)
 It isn't stable yet, but as soon it is I will decouple it from my personal
@@ -13,7 +13,7 @@ to run tests and look for thing to be done.
 - [TODOS](#todo)
 - [Notes](#notes)
 - [API](#api)
-  - [Dotenv](#dotenv)
+  - [denv](#denv)
   - [Dep](#dep)
   - [Pkg](#pkg)
   - [Utils](#utils)
@@ -28,53 +28,31 @@ workflow emerge and I'd like to easily capture that :D.
 - [X] Sketch out the design and stuff to work on.
 - [X] Implement pkg module.
 - [ ] Implement dep module.
-- [ ] Implement conf module.
+- [ ] Implement profile module.
 - [ ] Refactor
-- [ ] Implement durable storage for storing profiles.
 - [ ] Add support for other pkg managers (pip, node ...)
-
-## TODO
-
-- [X] log changes in (profiles, deps, pkgs) on the machine
-- [X] consider using yay instead of pacman since it does what pacman do.
-- [ ] Refactor utils to submodules or maybe better macros!!
-- [ ] Create an shell alias around pacman and brew that will appends new
-  package and remove them from a file under `dotenv/cache`
-- [ ] add another field to pkg and dep for executing a function or a array of
-  functions.
-- [ ] move all variables and files names to internal config file. For example,
-  dotenv/vars.janet
-- [ ] Manage profiles, pkgs and deps through durable database.
 
 ## Notes
 
-**Dotenv Configuration**
+**denv Configuration**
 
 ```clj 
-{:pass "" ;; root password for stuff to run correctly (temp)
- :cache (or "~/.cache/dotenv" "path") ;; where the dotenv cache should be located
- :data (or "~/.local/" "path") ;; where the dotenv cache should be located
- :base "user/repo" ;; github-repo where all configurations and profiles are stored.
- :home "path" ;; where `:base` will be cloned to.
- :profiles (or (string :base "profiles") "path") ;; dir where profiles root is located
- :dotfiles (or (string :base "dotfiles") "path") ;; dir where configuration root is located.
- :deps (or (string :data "deps") "path")  
-}
+{:repo "tami5/runtime"                 # Where the user dotfiles can be cloned from
+ :path "repos/runtime"                 # Where the `dt-repo` will be cloned to and later used.
+ :profiles "profiles"                  # Where will profiles definitions be stored.
+ :resources "store"                    # Where will configuration files and directories are located.
+ :deps "local"                         # Where local deps that needs build are located.
+ :notify false                         # Whether to enable system level notifcation.
+ :pass (surlp "path/to/pass")          # User Password required for installing archlinux pkgs.
+ :init  {:archlinux "init/setup_arch"  # What file to run during config init. 
+         :darwin "init/setup_macos"}}
 
+  ; Should cloning main conifg repo part of dotenv process, what is possible with
+  ; that in mind?
 ```
 
-Should cloning main conifg repo part of dotenv process, what is possible with
-that in mind?
 
-I'm thinking of making cloning user-config dir part of dotenv process to setup
-the host machine. That way it would be much simpler to get compiled version of
-dotenv and then have the config either under ~/.config/dotenv.conf or
-~/.local/dotenv, or perhaps better run dotenv with optional config either from
-local file https file. `dotenv -c https://raw.git...` where it would do
-essentially three main tasks: parse the config, clone base to ..
-
-
-**Profile** 
+**Profile definition** 
 
 
 Profiles defines pkgs and deps to be installed, in addition to function to be
@@ -97,7 +75,24 @@ dotenv/bin to be used as part of the profile ...
 }
 ```
 
-**Dep**
+**Pkgs definition**
+
+Pkgs are packages available through pacman, aur, and brew. They are exactly
+like deps but managed by additional tools
+
+```clj
+(def example-pkgs
+  {:name (or "name" "alternative name")
+   :desc "description about the pkg and it usage."
+   :added 1605072427
+   :conf (or true "path/to/conf") ;; true if the conf is as same as the dep name.
+   :cmd (or func "")
+   :profile :term-env
+  }
+)
+```
+
+**Dep definition**
 
 Deps are git repos managed independently of a package manager. 
 Deps can have optional build method, configuration (or simply true ),
@@ -115,26 +110,9 @@ description for installation process and other meta information
 }
 ```
 
-**Pkgs**
-
-Pkgs are packages available through pacman, aur, and brew. They are exactly
-like deps but managed by additional tools
-
-```clj
-(def example-pkgs
-  {:name (or "name" "alternative name")
-   :desc "description about the pkg and it usage."
-   :added 1605072427
-   :conf (or true "path/to/conf") ;; true if the conf is as same as the dep name.
-   :cmd (or func "")
-   :profile :term-env
-  }
-)
-```
-
 ## API
 
-### Dotenv (0/2)
+### denv (0/2)
 
 Main command interface namespace. called through `dotenv cmd`
 
@@ -163,93 +141,3 @@ the profile's deps, pkgs, and scripts are executed.
 Takes an optional profile name and deletes symbolic links, pkgs, and deps
 related to it. If no argument provided, it will delete everything, leaving no
 trace :D.
-
-### Deps (1/5)
-
-- [ ] `dep/root`
-
-Defines where deps will be cloned to.
-
-- [ ] `dep/ensure f [Dep ...]` 
-
-Checks if a dep exists (i.e. the dep is cloned to `dep/dpath`) and is setup
-properly. Otherwise, calls `dep/add`. If `force` it will shall call
-`dep/remove` then `dep/add`.
-
-- [ ] `dep/add f [dep]` 
-
-Executes a number of function based on the dep fields. Returns `true` if all
-operations are successful, otherwise logs errors.
-
-- [ ] `dep/clone f [link fpath &branch]` 
-
-clones `link` to a given `fpath` with `&branch` if provided. It shell call
-`dotenv/notify` with the result of running the command.
-
-- [ ] `dep/pull f [fpath]` 
-
-Wrapper around `git -C fpath pull`.
-
-- [ ] `dep/remove f [dep]` 
-
-### Pkgs
-- [X] `pkg/ensure f [pkg &opt force]` 
-
-Checks if a pkg exists and is setup properly return. Otherwise, calls
-`dep/add`. If `force` it will shall call `d/remove` then `dep/add`.
-
-- [X] `pkg/add f [pkg &opt silent]` 
-
-Given a pkg, install it with brew or pacman based on the os type, and if &force
-call `pkg/remove` remove it then reinstall then `pkg/add` 
-
-- [X] `pkg/remove f [pkg &opt silent]` 
-
-Given a pkg, remove it with brew or pacman based on the os type.
-
-- [X] `pkg/upgeade f [pkg &opt silent]` 
-
-Given a pkg, update it with brew or pacman based on the os type.
-
-- [X] `pkg/log f [pkg &opt action]` 
-
-Given a pkg and action, log the newly added, removed and updated packages. As
-well as append a log msg with the action and pkg name to `dotenv/cache`
-(state.log).
-
-### Conf (0/3)
-
-Set of functions to deal with file system and linking files.
-
-- [ ] `conf/root`
-
-The path where config directories and files is stored, default `./conf`. 
-
-- [ ] `conf/link f [Pkg/Dep]`
-
-Given a pkg or dep and if `:conf` is non-nil, look for configuration under
-`conf/root` with same name of the pkg or dep then link it to `XDG_CONFIG_HOME`
-and return true. Otherwise, return false.  Additionally,  If a `:conf` is a
-string link to the string instead.
-
-- [ ] `conf/remove f [Pkg/Dep]`
-
-Same as link but removes the link.
-
-### Utils
-
-General function that are used across the above namespace.
-
-- [X] `utils/notify f [:title :subtitle :timeout]`
-
-Takes a message and uses either `notify-send` or `alerter`.
-
-- [X] `utils/ep f [path]`
-
-Given a path of a file or a dir, ensure the file or dir exists and return back
-the path
-
-- [X] `utils/log f [aspect action l]` 
-
-Given an aspect, action and l (name or msg), append activity to dotenv log
-file.
