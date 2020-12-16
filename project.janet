@@ -1,9 +1,9 @@
 (declare-project
-  :name "dotenv"
+  :name "denv"
   :author "Tami"
   :license "MIT"
-  :url "https://github.com/tami5/dotenv"
-  :repo "git+https://github.com/tami5/dotenv"
+  :url "https://github.com/tami5/denv"
+  :repo "git+https://github.com/tami5/denv"
   :dependencies 
   ["https://github.com/andrewchambers/janet-sh"
    "https://github.com/janet-lang/path"
