@@ -21,8 +21,7 @@
 (defn csucc [msg] (cmsg :succ msg))
 
 (def msgs 
-  {:user-cfg-not-found (cerr "denv configuration file can't be found.")
-   :denv-intro (cinfo "A simple configuration utility for managing complex setups.")})
+  {:user-cfg-not-found (cerr "denv configuration file can't be found.")})
 
 (def cfg 
   (let [denv (fn [v] (-> v os/getenv (string "/denv") fs/ensure))

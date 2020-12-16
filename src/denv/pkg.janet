@@ -22,13 +22,13 @@
                   :upgrade [main "upgrade" pkg*]
                   :info [main "check" pkg*]}))]
     (cond 
-      (not (= distro :archlinux)) (mang action)
+      (not (= distro :archlinux)) [(mang action) :> :null]
       (= action :check) (mang :check)
       :else (do 
               (when (nil? (cfg :user/pass))
                 (error 
                   (cerr "user password is not defined. It is required to install packages in arch")))    
-              [@["echo" (cfg :user/pass)] (flatten [["/usr/bin/sudo" "-S"] (mang action)])]))))
+              [@["echo" (cfg :user/pass)] (flatten [["/usr/bin/sudo" "-S"] (mang action) :> :null])]))))
 
 (defn- exists? [pkg]
   (sh/$? ;(pm-args :check pkg)))

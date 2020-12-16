@@ -1,4 +1,4 @@
-# (import src/denv/pkg :as pkg)
+(import src/denv/pkg)
 (import argparse :prefix "")
 (use src/denv/core)
 
@@ -36,19 +36,41 @@
 #   (print "denv" usage))
 
 (def params 
-  [(msgs :denv/help-intro)
-   "profile" {:kind :option 
-              :short "pr"
-              :help "Ensure a profile" }
+  ["A simple configuration utility for managing complex setups."
+   "profile-ensure" {:kind :option 
+                     :short "e"
+                     :help "Ensure a profile" }
+   "profile-rm" {:kind :option 
+                 :short "x"
+                 :help "Eliminate a profile"}
+   "pack-add" {:kind :option 
+               :short "a"
+               :help "add/install new package"}
+   "pack-rm" {:kind :option 
+              :short "r"
+              :help "remove/uninstall package"}
+   "pack-update" {:kind :option 
+                  :short "u"
+                  :help "update a package"}
    "config" {:kind :option 
              :short "c"
              :help "denv config to use" }
-   "eliminate" {:kind :option 
-                :short "e"
-                :help "Eliminate a profile"}])
+   ])
 
 
-(defn main [&]
-  (let [args (argparse ;params)]
-    (pp args))
+(defn main [& args]
+  (with-dyns [:args args]
+    (let [res (argparse (splice params))]
+      (unless res
+        (os/exit 1))
+      (pkg/add (res "pack-add"))))
   )
+
+# (let [args (argparse ;params)]
+    
+#     # (cond 
+#     #  (not (empty? (args "pack-add"))) (pkg/ensure (args "pack-add")) 
+#     #  (not (empty? (args "pack-rm"))) (pp (args "pack-rm")) 
+#     #  (not (empty? (args "pack-upgrade"))) (pkg/upgrade (args "pack-upgrade")) 
+#     #  )
+#     )
