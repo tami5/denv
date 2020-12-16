@@ -1,76 +1,74 @@
-(import src/denv/pkg)
 (import argparse :prefix "")
-(use src/denv/core)
+(import src/denv/pkg)
 
-# (def args (dyn :args))
+(def pkg-params 
+  ["Package manager Capaiblities"
+   "ensure" {:kind :option 
+             :short "e"
+             :help "ensure/install new package"}
+   "remove" {:kind :option 
+             :short "r"
+             :help "remove/uninstall package"}
+   "update" {:kind :option 
+             :short "u"
+             :help "update a package"}
+   "info" {:kind :option 
+           :short "i"
+           :help "Get a table of packages installed with denv." }
+   :default {:kind :accumulate}])
 
-# (def usage
-#   "Usage"
-# ``` [action]
+(defn- pkg-req [& args]
+  (let [args (argparse ;pkg-params)]
+    (when-let [pkg (args "ensure")] (pkg/ensure pkg))
+    (when-let [pkg (args "remove")] (pkg/remove pkg))
+    (when-let [pkg (args "update")] (pkg/upgrade pkg)) # TODO if no pkg provided, 
+    (when (args "info") (printf "Pkg info is not supported yet."))))
 
-#   Actions:
-#     help               - Print this usage information
-#     profile <name>     - Setup a profile
-#     push               - Push changes to remote repo
-#     pull               - Pull changes from remote repo
-#     clean <name>       - Remove profile or all profiles
-#     pkg-add <pkg>      - Add new pkg
-#     pkg-rm <pkg>       - Remove a pkg
-#     pkg-up <pkg>       - update a pkg
-#     version            - Print the current version
-# ```)
+(def dep-params 
+  ["Profile manager Capaiblities"
+   "add" {:kind :option 
+          :short "a"
+          :help "add a new dep from github user/repo"}
+   "remove" {:kind :option 
+             :short "r"
+             :help "remove a pakcage or run dep remove function if its defined."}
+   "update" {:kind :option 
+             :short "u"
+             :help "update a dep by running git pull"}
+   "info" {:kind :option 
+           :short "i"
+           :help "Get a table of deps installed in current enviroment" }
+   :default {:kind :accumulate}])
 
-# (def action (get args 1))
-# (def options (drop 2 args))
+(defn- dep-req [& args]
+  (let [args (argparse ;dep-params)]))
 
-# (case action
-#   "profile" (denv/ensure ;options)
-#   "push"    (denv/push)
-#   "pull"    (denv/pull)
-#   "clean"   (denv/clean ;options)
-#   "pull"    (denv/pull)
-#   "pkg-add" (pkg/add ;options)
-#   "pkg-rm"  (pkg/remove ;options)
-#   "pkg-up"  (pkg/update ;options)
-#   "version" (print denv/version)
-#   (print "denv" usage))
+(def profile-params 
+  ["Profile manager Capaiblities"
+   "ensure" {:kind :option 
+             :short "e"
+             :help "ensure a profile"}
+   "remove" {:kind :option 
+             :short "r"
+             :help "remove a profile"}
+   "update" {:kind :option 
+             :short "u"
+             :help "update a profile pkgs and deps."}
+   "info" {:kind :option 
+           :short "i"
+           :help "Get a table of profile ensured in current enviroment." }
+    :default {:kind :accumulate}])
 
-(def params 
-  ["A simple configuration utility for managing complex setups."
-   "profile-ensure" {:kind :option 
-                     :short "e"
-                     :help "Ensure a profile" }
-   "profile-rm" {:kind :option 
-                 :short "x"
-                 :help "Eliminate a profile"}
-   "pack-add" {:kind :option 
-               :short "a"
-               :help "add/install new package"}
-   "pack-rm" {:kind :option 
-              :short "r"
-              :help "remove/uninstall package"}
-   "pack-update" {:kind :option 
-                  :short "u"
-                  :help "update a package"}
-   "config" {:kind :option 
-             :short "c"
-             :help "denv config to use" }
-   ])
+(defn- profile-req [& args]
+  (let [args (argparse ;profile-params)])) 
 
 
 (defn main [& args]
-  (with-dyns [:args args]
-    (let [res (argparse (splice params))]
-      (unless res
-        (os/exit 1))
-      (pkg/add (res "pack-add"))))
-  )
-
-# (let [args (argparse ;params)]
-    
-#     # (cond 
-#     #  (not (empty? (args "pack-add"))) (pkg/ensure (args "pack-add")) 
-#     #  (not (empty? (args "pack-rm"))) (pp (args "pack-rm")) 
-#     #  (not (empty? (args "pack-upgrade"))) (pkg/upgrade (args "pack-upgrade")) 
-#     #  )
-#     )
+  (let [feature (get args 1)
+        args (array/slice args 2 -1)]
+    (case feature 
+       "profile" (printf "Sorry %s is not yet supported." feature)
+       "pkg" (pkg-req)
+       "dep" (printf "Sorry %s is not yet supported." feature)
+       "version" (printf "Sorry %s is not yet supported." feature)
+       "update" (printf "Sorry %s is not yet supported." feature))))
