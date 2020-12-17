@@ -25,12 +25,11 @@ workflow emerge and I'd like to easily capture that :D.
 
 ## Milestones
 
-- [X] Sketch out the design and stuff to work on.
-- [X] Implement pkg module.
-- [ ] Implement dep module.
-- [ ] Implement profile module.
-- [ ] Refactor
-- [ ] Add support for other pkg managers (pip, node ...)
+- [X] adds, removes and updates pkgs.
+- [X] basic logging on pkgs/deps/profiles actions.
+- [ ] adds, removes, updates, and build deps.
+- [ ] adds, removes, and updates profiles.
+- [ ] prints colorful summary of current state 
 
 ## Notes
 
