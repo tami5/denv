@@ -69,12 +69,11 @@
   (def- args (argparse ;(params :profile))))
 
 (defn main [& args]
-  (let [feature (get args 1)
-        args (array/slice args 2 -1)]
-    (case feature
-       "profile" (printf "Sorry %s is not yet supported." feature)
-       "pkg" (pkg-req)
-       "dep" (printf "Sorry %s is not yet supported." feature)
-       "version" (printf "Sorry %s is not yet supported." feature)
-       "update" (printf "Sorry %s is not yet supported." feature))))
+  (def- feature (get args 1))
+  (case feature
+    "profile" (printf "Sorry %s is not yet supported." feature)
+    "pkg" (pkg-req)
+    "dep" (printf "Sorry %s is not yet supported." feature)
+    "version" (printf "Sorry %s is not yet supported." feature)
+    "update" (printf "Sorry %s is not yet supported." feature)))
 
