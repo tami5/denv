@@ -1,118 +1,59 @@
-# Pkg management module
-(import sh)
 (use src/denv/core)
 (import src/denv/util/fs)
+(import src/denv/util/sh)
 
-(defn- pm-args [action package] 
-  (let [pkg* (if (string? package) 
-                package 
-                ;package) 
-        mang (case distro 
-               :archlinux 
-               (let [main "/usr/bin/pacman"
-                     nonconf "--noconfirm"] 
-                 {:add [main "-S" nonconf pkg*]
-                  :remove [main "-R" nonconf pkg*] 
-                  :upgrade [main "-S" nonconf pkg*]  
-                  :check [main "-Q" nonconf pkg*]}) 
-               :mac 
-               (let [main "brew"]
-                 {:add [main "install" pkg*]
-                  :remove [main "uninstall" pkg*]
-                  :upgrade [main "upgrade" pkg*]
-                  :info [main "check" pkg*]}))]
-    (cond 
-      (not (= distro :archlinux)) [(mang action) :> :null]
-      (= action :check) (mang :check)
-      :else (do 
-              (when (nil? (cfg :user/pass))
-                (error 
-                  (cerr "user password is not defined. It is required to install packages in arch")))    
-              [@["echo" (cfg :user/pass)] (flatten [["/usr/bin/sudo" "-S"] (mang action) :> :null])]))))
+(def- actions
+  (case distro
+    :archlinux
+    (let [main "/usr/bin/pacman"
+          nonconf "--noconfirm"]
+      {:add [main "-S" nonconf]
+       :remove [main "-R" nonconf]
+       :update [main "-S" nonconf]
+       :check [main "-Q" nonconf]})
+    :mac
+    (let [main "brew"]
+      {:add [main "install"]
+       :remove [main "uninstall"]
+       :update [main "upgrade"]
+       :info [main "check"]})))
 
-(defn- exists? [pkg]
-  (sh/$? ;(pm-args :check pkg)))
+(def- msgs
+  {:err {:add "Failed to install '%s'."
+         :remove "Failed to remove '%s'"
+         :update "Failed to update '%s'"}
 
-(defn- update-logs [action pkg]
-  (let [path (fs/ensure (string (cfg :denv/log-dir) "/pkgs.janet" ))
-        content (slurp path)
-        pkgs (if (not (empty? content))
-               (parse content)
-               @{})]
-    
-    # TODO: sort logs/use array
-    (put pkgs (keyword (datetime)) @{:pkg/name pkg :action action})
-    (spit path (string/format "%m" pkgs))
+   :succ {:remove "Removed '%s'"
+          :add "Installed '%s'"
+          :update "Updated '%s'"}})
 
-    (log :pkg action pkg)))
+(defn exists? [pkg]
+  (sh/run (flatten [(actions :check) pkg])))
 
-(defn- post [action pkg status]  
-  (def- msg 
-    (case action
-      :remove 
-      (if status 
-        "`%s` has been removed!"
-        "For some reason %s couldn't be removed!!")
 
-      :add 
-      (if status 
-        "`%s` has been installed successfully!"
-        "For some reason `%s` couldn't be installed.")
-      :upgrade 
-      (if status
-        "`%s` has been updated successfully!"
-        "For some reason `%s` couldn't be updated.")))
+(defn- exit
+  ```
+  Post function used after "run" to update-logs and print msg to the user.
+  ```
+  [act pkg res print?]
+  (if (not (res :succ))
+    (let [msg (string/format (get-in msgs [:err act]) pkg)]
+      (printf (cerr "%s\n ERR: %s") msg (res :out)))
+    (let [msg (string/format (get-in msgs [:succ act]) pkg)]
+      (update-registry :pkg @{:pkg/name pkg :action act})
+      (when print? (print (csucc msg))))))
 
-  (if (not status)  
-    (printf (cerr msg) pkg)
-    (do (update-logs action pkg)
-      (printf (cinfo msg) pkg))))
+(defn req
+  ```
+  run an action on a pkg.
+  ```
+  [act pkg &opt print?]
+  (let [pkg (if (string? pkg) pkg
+              (string/join pkg " "))
+        args (flatten [(actions act) pkg])
+        res (if (= distro :archlinux)
+              (sh/run args (cfg :user/pass))
+              (sh/run args))
+        print? (default print? true)]
+    (exit act pkg res print?)))
 
-(defn run 
-  "run an action on a pkg."
-  [opts]   
-  (let [action (opts :action)
-        pkg (opts :pkg)
-        cb (opts :cb)
-        dry (or (opts :dry) false)
-        silent (or (opts :silent) false)] 
-    (def- args (pm-args action pkg))
-    (if dry 
-      args
-      (let [status (all zero? (sh/run* ;args))] 
-        (when (not silent) 
-          (cb action pkg status))))))
-
-(defn add
-  "Given a pkg, install it."
-  [pkg &opt dry]
-  (run {:action :add 
-        :pkg pkg 
-        :cb post 
-        :dry dry}))
-
-(defn remove
-  "Given a pkg, remove! it"
-  [pkg &opt dry]
-  (run {:action :remove
-        :pkg pkg 
-        :cb post 
-        :dry dry}))
-
-(defn upgrade 
-  "Given a pkg, upgrade."
-  [pkg &opt dry]
-  (run {:action :upgrade
-        :pkg pkg 
-        :cb post 
-        :dry dry}))
-
-(defn ensure
-  "if `pkg` isn't installed install it,
-   otherwise if `force`, removed it and reinstall it."
-  [pkg &opt force]
-  (if force
-    (do (run {:action :remove :pkg pkg :cb post :silent true}) 
-      (run {:action :add :pkg pkg :cb post :silent true}))
-    (when (not (exists? pkg))
-      (add pkg))))
