@@ -2,21 +2,34 @@
 (import src/denv/util/fs)
 (import src/denv/util/sh)
 
-(def- actions
+(def- supported-pm
   (case distro
     :archlinux
-    (let [main "/usr/bin/pacman"
-          nonconf "--noconfirm"]
-      {:add [main "-S" nonconf]
-       :remove [main "-R" nonconf]
-       :update [main "-S" nonconf]
-       :check [main "-Q" nonconf]})
+    {:cmd (cond
+            (= "yay" (get-in cfg [:user/pm :archlinux])) "yay"
+            (= "paru" (get-in cfg [:user/pm :archlinux])) "paru"
+            :else "paru")
+     :options ["--noconfirm" "--sudoloop"]
+     :add "-S"
+     :update "-S"
+     :remove "-Rs"
+     :check "-Q"}
     :mac
-    (let [main "brew"]
-      {:add [main "install"]
-       :remove [main "uninstall"]
-       :update [main "upgrade"]
-       :info [main "check"]})))
+    {:cmd "brew"
+     :options []
+     :add "install"
+     :remove "unistall"
+     :update "upgrade"
+     :info "check"}))
+
+(def- actions
+    (let [a supported-pm
+          cmd (a :cmd)
+          options (a :options) ]
+      {:add [cmd (a :add) ;options]
+       :remove [cmd (a :remove) ;options]
+       :update [cmd (a :update) ;options]
+       :check [cmd (a :check) ;options]}))
 
 (def- msgs
   {:err {:add "Failed to install '%s'."
@@ -29,7 +42,6 @@
 
 (defn exists? [pkg]
   (sh/run (flatten [(actions :check) pkg])))
-
 
 (defn- exit
   ```
