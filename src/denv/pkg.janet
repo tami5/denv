@@ -1,7 +1,9 @@
 (use src/denv/core)
+(use src/denv/util/print)
 (import src/denv/util/fs)
 (import src/denv/util/sh)
 
+# TODO: make it accept a table of package definition and use in logs
 (def- supported-pm
   (case distro
     :archlinux
