@@ -25,11 +25,29 @@ workflow emerge and I'd like to easily capture that :D.
 
 ## Milestones
 
-- [X] adds, removes and updates pkgs.
-- [X] basic logging on pkgs/deps/profiles actions.
-- [ ] adds, removes, updates, and build deps.
-- [ ] adds, removes, and updates profiles.
-- [ ] prints colorful summary of current state 
+- Pkg Module
+  - [X] adds, removes, and updates pkg for aur and brew.
+  - [ ] accepts a map instead of pkg name for later processing and logic.
+  - [ ] supports language-specific package managers e.g. NPM.
+  
+- Dep Module
+  - [X] adds, removes, and updates deps.
+  - [ ] build and process build scripts for deps.
+  - [ ] support other host than github.
+
+- Profile Module
+  - [ ] adds, removes, and updates profiles.
+  
+- Logging and info Module 
+  - [X] basic logging on pkgs/deps/profiles actions.
+  - [ ] Log an array sorted by date
+  - [ ] Print a table of pkg/dep/profiles installed.
+  - [ ] Print a table of pkg/dep not registered in profiles.
+  
+- Conf Module
+  - [ ] Create a module for operation specific to configuration.
+  - [ ] Use recently changed denv configuration file as opposed to first non-nil path.
+  - [ ] Use config file from URL
 
 ## Notes
 
@@ -42,12 +60,8 @@ workflow emerge and I'd like to easily capture that :D.
  :resources "store"                    # Where will configuration files and directories are located.
  :deps "local"                         # Where local deps that needs build are located.
  :notify false                         # Whether to enable system level notifcation.
- :pass (surlp "path/to/pass")          # User Password required for installing archlinux pkgs.
  :init  {:archlinux "init/setup_arch"  # What file to run during config init. 
          :darwin "init/setup_macos"}}
-
-  ; Should cloning main conifg repo part of dotenv process, what is possible with
-  ; that in mind?
 ```
 
 
@@ -108,35 +122,3 @@ description for installation process and other meta information
   }
 }
 ```
-
-## API
-
-### denv (0/2)
-
-Main command interface namespace. called through `dotenv cmd`
-
-- [ ] `dotenv/push f []`
-
-Simple wrapper around `git -c $DOTENV push` that pushes changes made in user
-config dir with a timestamp and auto generated summary. In the future, it may
-incorporate pushing changes made in deps owned by the user. 
-
-- [ ] `dotenv/pull f []`
-
-Simple wrapper around `git -c $DOTENV pull` that pull changes made in the
-remote repo. In the future, it may incorporate pulling changes made in deps
-owned by the user. 
-
-### Profile (0/2)
-
-- [ ] `profile/ensure f [profile]` 
-
-Takes a profile name as an argument and call a set of functions to ensure that
-the profile's deps, pkgs, and scripts are executed.
-
-
-- [ ] `profile/clean f [&opt profile]`
-
-Takes an optional profile name and deletes symbolic links, pkgs, and deps
-related to it. If no argument provided, it will delete everything, leaving no
-trace :D.
