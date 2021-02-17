@@ -34,7 +34,7 @@
 
 (defn up-to-date?
   `Is local branch is up-to-date with remote?`
-  [path]
+  [path] # TODO: use git status -sb instead.
   (empty? ((csh/run ["git" "-C" path "fetch" "--dry-run"]) :out)))
 
 (defn unpushed-commits?
